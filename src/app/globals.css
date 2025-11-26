@@ -1,0 +1,6 @@
+/* Reset or keep empty to rely on inline styles as requested */
+body {
+  margin: 0;
+  padding: 0;
+  background: #000;
+}
