@@ -1,52 +1,20 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { useProducts } from '@/hooks/useProducts';
+import { useCategories } from '@/hooks/useCategories';
 
-// Assets (using public paths)
-const editorialShirt = '/assets/editorial_shirt.png';
-const editorialPant = '/assets/editorial_pant.png';
-const manEditorial = '/assets/man_editorial.png';
-const fabricImage = '/assets/helix_fabric.png';
-const heroImage = '/assets/fashion_studio_hero.png';
-const shoeImage = '/assets/helix_shoe.png';
-const accessoriesImage = '/assets/accessories.png';
-const luxuryTee = '/assets/luxury_tee.png';
-const luxuryOvercoat = '/assets/luxury_overcoat.png';
 
-// --- MOCK DATA ---
-const ALL_PRODUCTS = [
-    { id: 'shirt-1', title: 'THE OXFORD SHIRT', price: 350, displayPrice: '$350', category: 'shirt', sizes: ['S', 'M', 'L'], image: editorialShirt },
-    { id: 'shirt-2', title: 'THE SILK BLEND', price: 420, displayPrice: '$420', category: 'shirt', sizes: ['M', 'L', 'XL'], image: manEditorial },
-    { id: 'shirt-3', title: 'THE POPLIN CLASSIC', price: 295, displayPrice: '$295', category: 'shirt', sizes: ['S', 'M'], image: fabricImage },
-    { id: 'shirt-4', title: 'THE EVENING SHIRT', price: 550, displayPrice: '$550', category: 'shirt', sizes: ['L', 'XL'], image: editorialShirt },
-    { id: 'pant-1', title: 'THE PLEATED TROUSER', price: 495, displayPrice: '$495', category: 'pant', sizes: ['30', '32', '34'], image: editorialPant },
-    { id: 'pant-2', title: 'THE WOOL SLACK', price: 525, displayPrice: '$525', category: 'pant', sizes: ['32', '34', '36'], image: heroImage },
-    { id: 'pant-3', title: 'THE CHINO', price: 250, displayPrice: '$250', category: 'pant', sizes: ['30', '32'], image: fabricImage },
-    { id: 'tee-1', title: 'THE LUXURY TEE', price: 150, displayPrice: '$150', category: 'tshirt', sizes: ['S', 'M', 'L', 'XL'], image: luxuryTee },
-    { id: 'shoe-1', title: 'THE DERBY', price: 650, displayPrice: '$650', category: 'shoe', sizes: ['9', '10', '11'], image: shoeImage },
-    { id: 'outer-1', title: 'THE OVERCOAT', price: 1200, displayPrice: '$1200', category: 'outerwear', sizes: ['M', 'L'], image: luxuryOvercoat },
-    { id: 'acc-1', title: 'THE LEATHER FOLIO', price: 450, displayPrice: '$450', category: 'accessory', sizes: ['OS'], image: accessoriesImage },
-];
-
-const CATEGORY_OPTIONS = [
-    { id: 'shirt', label: 'Shirts' },
-    { id: 'pant', label: 'Pants' },
-    { id: 'tshirt', label: 'Tees' },
-    { id: 'shoe', label: 'Footwear' },
-    { id: 'outerwear', label: 'Outerwear' },
-    { id: 'accessory', label: 'Accessories' },
-];
-
-const SIZE_OPTIONS = ['S', 'M', 'L', 'XL', '30', '32', '34', '36', '9', '10', '11', 'OS'];
+const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', '30', '32', '34', '36', '9', '10', '11', 'OS'];
 
 const PRICE_RANGES = [
-    { id: 'all', label: 'All Prices', min: 0, max: 10000 },
-    { id: 'under-300', label: 'Under $300', min: 0, max: 300 },
-    { id: '300-600', label: '$300 - $600', min: 300, max: 600 },
-    { id: 'over-600', label: 'Over $600', min: 600, max: 10000 },
+    { id: 'all', label: 'All Prices', min: 0, max: 10000000 },
+    { id: 'under-300', label: 'Under $300', min: 0, max: 30000 },
+    { id: '300-600', label: '$300 - $600', min: 30000, max: 60000 },
+    { id: 'over-600', label: 'Over $600', min: 60000, max: 10000000 },
 ];
 
 const ProductListingPage = () => {
@@ -60,29 +28,67 @@ const ProductListingPage = () => {
     const [selectedPriceRange, setSelectedPriceRange] = useState(PRICE_RANGES[0]);
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
+    // --- FETCH DATA ---
+    const { categories, loading: categoriesLoading } = useCategories();
+
+    // Build filters for products
+    const productFilters = useMemo(() => {
+        let categoryIdsArray = undefined;
+
+        if (selectedCategories.length > 0) {
+            // Map selected slugs to IDs
+            const ids = categories
+                .filter(c => selectedCategories.includes(c.slug))
+                .map(c => c.id);
+
+            // If categories are selected but we found no matching IDs:
+            // 1. If categories haven't loaded yet (categories.length === 0), we want to wait (don't show all products).
+            // 2. If categories loaded but no match found, we want to show no results.
+            // In both cases, passing a dummy ID ensures we don't fall back to "fetch all".
+            if (ids.length === 0) {
+                categoryIdsArray = ['waiting-for-ids'];
+            } else {
+                categoryIdsArray = ids;
+            }
+        }
+
+        return {
+            categoryIds: categoryIdsArray,
+            minPrice: selectedPriceRange.min,
+            maxPrice: selectedPriceRange.max,
+        };
+    }, [selectedCategories, selectedPriceRange, categories]);
+
+    const { products, loading: productsLoading } = useProducts(productFilters);
+
+    // Client-side size filtering (since Supabase query doesn't handle this)
+    const filteredProducts = useMemo(() => {
+        if (selectedSizes.length === 0) return products;
+        return products.filter(product =>
+            product.sizes.some(size => selectedSizes.includes(size))
+        );
+    }, [products, selectedSizes]);
+
+    const loading = categoriesLoading || productsLoading;
+
+    // Convert categories to options format
+    const CATEGORY_OPTIONS = useMemo(() =>
+        categories.map(cat => ({ id: cat.slug, label: cat.title })),
+        [categories]
+    );
+
     // --- INITIALIZATION ---
     useEffect(() => {
         // If the URL has a category, select it by default
         if (categoryId && categoryId !== 'all') {
+            console.log('Setting category from URL:', categoryId);
             setSelectedCategories([categoryId]);
         } else {
+            console.log('Clearing category filter');
             setSelectedCategories([]);
         }
-    }, [categoryId]);
-
-    // --- FILTERING LOGIC ---
-    const filteredProducts = ALL_PRODUCTS.filter(product => {
-        // 1. Category Filter
-        const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(product.category);
-
-        // 2. Size Filter
-        const sizeMatch = selectedSizes.length === 0 || product.sizes.some(size => selectedSizes.includes(size));
-
-        // 3. Price Filter
-        const priceMatch = product.price >= selectedPriceRange.min && product.price <= selectedPriceRange.max;
-
-        return categoryMatch && sizeMatch && priceMatch;
-    });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [categoryId]); // Only depend on categoryId, not categories array
 
     // --- HANDLERS ---
     const toggleCategory = (catId) => {
@@ -202,11 +208,11 @@ const ProductListingPage = () => {
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                     transition={{ duration: 0.3 }}
-                                    onClick={() => router.push(`/product/${product.id}`)}
+                                    onClick={() => router.push(`/product/${product.slug}`)}
                                 >
                                     <div className="v3-image-wrapper">
                                         <Image
-                                            src={product.image}
+                                            src={product.images[0] || '/assets/man_editorial.png'}
                                             alt={product.title}
                                             fill
                                             sizes="(max-width: 768px) 50vw, 33vw"

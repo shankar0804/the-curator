@@ -4,44 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-
-// Assets (using public paths)
-const editorialShirt = '/assets/editorial_shirt.png';
-const editorialPant = '/assets/editorial_pant.png';
-const manEditorial = '/assets/man_editorial.png';
-const fabricImage = '/assets/helix_fabric.png';
-
-// Mock Data
-const PRODUCTS = {
-    'shirt': {
-        id: 'shirt',
-        title: 'THE OXFORD SHIRT',
-        price: '$350',
-        description: 'A masterclass in tailoring. Cut from Italian cotton poplin, this shirt features a relaxed yet structured silhouette. Finished with mother-of-pearl buttons and a signature elongated cuff.',
-        composition: '100% Italian Cotton Poplin',
-        fit: 'Relaxed fit. Model is 6\'1" and wears size M.',
-        images: [editorialShirt, manEditorial, fabricImage, editorialShirt]
-    },
-    'pant': {
-        id: 'pant',
-        title: 'THE PLEATED TROUSER',
-        price: '$495',
-        description: 'Precision-cut trousers with a high rise and double pleats. Crafted from lightweight virgin wool for year-round wearability.',
-        composition: '100% Virgin Wool',
-        fit: 'Tapered leg. Model is 6\'1" and wears size 32.',
-        images: [editorialPant, fabricImage, editorialPant, manEditorial]
-    },
-    // Fallback for other IDs
-    'default': {
-        id: 'default',
-        title: 'THE CLASSIC ESSENTIAL',
-        price: '$295',
-        description: 'Timeless design meets modern luxury. An essential piece for the curated wardrobe.',
-        composition: '100% Premium Cotton',
-        fit: 'True to size.',
-        images: [manEditorial, fabricImage, manEditorial, fabricImage]
-    }
-};
+import { useProductBySlug } from '@/hooks/useProducts';
 
 // --- HOOKS ---
 const useMediaQuery = (query) => {
@@ -289,11 +252,11 @@ const AccordionItem = ({ title, isOpen, onClick, children }) => {
 // --- MAIN COMPONENT ---
 const ProductDetailPage = () => {
     const params = useParams();
-    const id = params.id;
-    const product = PRODUCTS[id] || PRODUCTS['default'];
-    // Note: useMediaQuery might cause hydration mismatch if not handled carefully.
-    // For simplicity in this port, we'll default to desktop and let client update, or use a robust hook.
-    // Here we use a simple effect-based hook which is safe but might flash.
+    const slug = params.id; // Note: route param is 'id' but it's actually the slug
+
+    // Fetch product from Supabase
+    const { product, loading, error } = useProductBySlug(slug);
+
     const isMobile = useMediaQuery('(max-width: 1024px)');
 
     const [selectedSize, setSelectedSize] = useState(null);
@@ -304,27 +267,76 @@ const ProductDetailPage = () => {
         setExpandedSection(expandedSection === section ? null : section);
     };
 
-    // Prevent hydration mismatch by not rendering until mounted (optional but recommended)
+    // Prevent hydration mismatch
     const [mounted, setMounted] = useState(false);
     useEffect(() => setMounted(true), []);
 
     if (!mounted) return null;
 
+    // Loading state
+    if (loading) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: 'Manrope, sans-serif'
+            }}>
+                Loading product...
+            </div>
+        );
+    }
+
+    // Error or not found
+    if (error || !product) {
+        console.log('Product detail error:', { error, product, slug });
+        return (
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: 'Manrope, sans-serif',
+                flexDirection: 'column',
+                gap: '1rem'
+            }}>
+                <p>Product not found</p>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>Slug: {slug}</p>
+                {error && <p style={{ fontSize: '0.8rem', color: '#c00' }}>Error: {error.message}</p>}
+                <button onClick={() => window.history.back()} style={{
+                    padding: '0.75rem 1.5rem',
+                    background: '#000',
+                    color: '#fff',
+                    border: 'none',
+                    cursor: 'pointer'
+                }}>Go Back</button>
+            </div>
+        );
+    }
+
+    // Format product data for components
+    const formattedProduct = {
+        ...product,
+        price: product.displayPrice,
+        fit: product.fitDescription
+    };
+
     return (
         <>
             {isMobile ? (
                 <MobileView
-                    product={product}
+                    product={formattedProduct}
                     selectedSize={selectedSize}
                     setSelectedSize={setSelectedSize}
-                    SIZES={SIZES}
+                    SIZES={product.sizes}
                 />
             ) : (
                 <DesktopView
-                    product={product}
+                    product={formattedProduct}
                     selectedSize={selectedSize}
                     setSelectedSize={setSelectedSize}
-                    SIZES={SIZES}
+                    SIZES={product.sizes}
                     expandedSection={expandedSection}
                     toggleSection={toggleSection}
                 />

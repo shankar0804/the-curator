@@ -4,34 +4,44 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-
-// Reuse assets (using public paths)
-const editorialShirt = '/assets/editorial_shirt.png';
-const editorialPant = '/assets/editorial_pant.png';
-const luxuryTee = '/assets/luxury_tee.png';
-const luxuryShoe = '/assets/luxury_shoe.png';
-const luxuryAccessories = '/assets/luxury_accessories.png';
-const luxuryOvercoat = '/assets/luxury_overcoat.png';
-const luxuryDenim = '/assets/luxury_denim.png';
-const luxurySuit = '/assets/luxury_suit.png';
-const luxuryActivewear = '/assets/luxury_activewear.png';
-const luxuryLounge = '/assets/luxury_lounge.png';
-
-const CATEGORIES = [
-    { id: 'shirt', title: 'SHIRTS', subtitle: 'The Foundation', image: editorialShirt },
-    { id: 'pant', title: 'PANTS', subtitle: 'The Silhouette', image: editorialPant },
-    { id: 'tshirt', title: 'TEES', subtitle: 'The Essential', image: luxuryTee },
-    { id: 'shoe', title: 'FOOTWEAR', subtitle: 'The Stride', image: luxuryShoe },
-    { id: 'accessory', title: 'ACCESSORIES', subtitle: 'The Detail', image: luxuryAccessories },
-    { id: 'outerwear', title: 'OUTERWEAR', subtitle: 'The Layer', image: luxuryOvercoat },
-    { id: 'denim', title: 'DENIM', subtitle: 'The Texture', image: luxuryDenim },
-    { id: 'suits', title: 'SUITING', subtitle: 'The Statement', image: luxurySuit },
-    { id: 'active', title: 'ACTIVEWEAR', subtitle: 'The Motion', image: luxuryActivewear },
-    { id: 'lounge', title: 'LOUNGE', subtitle: 'The Comfort', image: luxuryLounge },
-];
+import { useCategories } from '@/hooks/useCategories';
 
 const CategoryPage = () => {
     const router = useRouter();
+    const { categories, loading, error } = useCategories();
+
+    // Loading state
+    if (loading) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: 'Manrope, sans-serif'
+            }}>
+                Loading categories...
+            </div>
+        );
+    }
+
+    // Error state
+    if (error) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: 'Manrope, sans-serif',
+                flexDirection: 'column',
+                gap: '1rem'
+            }}>
+                <p>Error loading categories: {error.message}</p>
+                <button onClick={() => window.location.reload()}>Retry</button>
+            </div>
+        );
+    }
 
     return (
         <div className="v32-container">
@@ -85,7 +95,7 @@ const CategoryPage = () => {
             </div>
 
             <div className="v32-grid">
-                {CATEGORIES.map((item, index) => (
+                {categories.map((item, index) => (
                     <motion.div
                         key={item.id}
                         className="v32-card"
@@ -93,11 +103,11 @@ const CategoryPage = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, margin: "-50px" }}
                         transition={{ duration: 0.5, delay: index * 0.05 }}
-                        onClick={() => router.push(`/collection/${item.id}`)}
+                        onClick={() => router.push(`/collection/${item.slug}`)}
                     >
                         <div className="v32-image-container">
                             <Image
-                                src={item.image}
+                                src={item.imageUrl}
                                 alt={item.title}
                                 fill
                                 sizes="(max-width: 768px) 50vw, 33vw"
