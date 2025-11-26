@@ -21,13 +21,15 @@ export function useProducts(filters?: ProductFilters, initialData?: Product[]) {
     return { products, loading, error };
 }
 
-export function useProductBySlug(slug: string) {
-    const [product, setProduct] = useState<Product | null>(null);
-    const [loading, setLoading] = useState(true);
+export function useProductBySlug(slug: string, initialData?: Product | null) {
+    const [product, setProduct] = useState<Product | null>(initialData || null);
+    const [loading, setLoading] = useState(!initialData);
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
         const repo = getProductRepository();
+
+        if (!product) setLoading(true);
 
         repo.getBySlug(slug)
             .then(setProduct)

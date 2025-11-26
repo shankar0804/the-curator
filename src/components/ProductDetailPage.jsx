@@ -250,12 +250,12 @@ const AccordionItem = ({ title, isOpen, onClick, children }) => {
 };
 
 // --- MAIN COMPONENT ---
-const ProductDetailPage = () => {
+const ProductDetailPage = ({ initialProduct }) => {
     const params = useParams();
     const slug = params.id; // Note: route param is 'id' but it's actually the slug
 
     // Fetch product from Supabase
-    const { product, loading, error } = useProductBySlug(slug);
+    const { product, loading, error } = useProductBySlug(slug, initialProduct);
 
     const isMobile = useMediaQuery('(max-width: 1024px)');
 
@@ -267,11 +267,10 @@ const ProductDetailPage = () => {
         setExpandedSection(expandedSection === section ? null : section);
     };
 
-    // Prevent hydration mismatch
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => setMounted(true), []);
-
-    if (!mounted) return null;
+    // Removed hydration block to allow SSR content to be visible immediately
+    // const [mounted, setMounted] = useState(false);
+    // useEffect(() => setMounted(true), []);
+    // if (!mounted) return null;
 
     // Loading state
     if (loading) {

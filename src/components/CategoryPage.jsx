@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useCategories } from '@/hooks/useCategories';
 
-const CategoryPage = () => {
+const CategoryPage = ({ initialCategories }) => {
     const router = useRouter();
-    const { categories, loading, error } = useCategories();
+    const { categories, loading, error } = useCategories(initialCategories);
 
     // Loading state
     if (loading) {
