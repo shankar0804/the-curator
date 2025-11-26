@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { getCategoryRepository } from '@/lib/providerFactory';
 import { Category } from '@/repositories/ICategoryRepository';
 
-export function useCategories() {
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [loading, setLoading] = useState(true);
+export function useCategories(initialData?: Category[]) {
+    const [categories, setCategories] = useState<Category[]>(initialData || []);
+    const [loading, setLoading] = useState(!initialData);
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
         const repo = getCategoryRepository();
+
+        if (categories.length === 0) setLoading(true);
 
         repo.getAll()
             .then(setCategories)

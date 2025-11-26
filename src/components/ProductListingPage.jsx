@@ -7,7 +7,6 @@ import Image from 'next/image';
 import { useProducts } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 
-
 const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', '30', '32', '34', '36', '9', '10', '11', 'OS'];
 
 const PRICE_RANGES = [
@@ -17,19 +16,26 @@ const PRICE_RANGES = [
     { id: 'over-600', label: 'Over $600', min: 60000, max: 10000000 },
 ];
 
-const ProductListingPage = () => {
+const ProductListingPage = ({ initialProducts, initialCategories }) => {
     const params = useParams();
     const router = useRouter();
     const categoryId = params.categoryId;
 
     // --- STATE ---
-    const [selectedCategories, setSelectedCategories] = useState([]);
+    // Initialize directly from URL to prevent flash of "all products"
+    const [selectedCategories, setSelectedCategories] = useState(() => {
+        if (categoryId && categoryId !== 'all') {
+            console.log('Initializing category from URL:', categoryId);
+            return [categoryId];
+        }
+        return [];
+    });
     const [selectedSizes, setSelectedSizes] = useState([]);
     const [selectedPriceRange, setSelectedPriceRange] = useState(PRICE_RANGES[0]);
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
     // --- FETCH DATA ---
-    const { categories, loading: categoriesLoading } = useCategories();
+    const { categories, loading: categoriesLoading } = useCategories(initialCategories);
 
     // Build filters for products
     const productFilters = useMemo(() => {
@@ -59,7 +65,7 @@ const ProductListingPage = () => {
         };
     }, [selectedCategories, selectedPriceRange, categories]);
 
-    const { products, loading: productsLoading } = useProducts(productFilters);
+    const { products, loading: productsLoading } = useProducts(productFilters, initialProducts);
 
     // Client-side size filtering (since Supabase query doesn't handle this)
     const filteredProducts = useMemo(() => {
@@ -79,16 +85,18 @@ const ProductListingPage = () => {
 
     // --- INITIALIZATION ---
     useEffect(() => {
-        // If the URL has a category, select it by default
+        // Sync with URL changes (e.g. back button)
         if (categoryId && categoryId !== 'all') {
-            console.log('Setting category from URL:', categoryId);
-            setSelectedCategories([categoryId]);
-        } else {
-            console.log('Clearing category filter');
+            if (!selectedCategories.includes(categoryId)) {
+                console.log('Syncing category from URL:', categoryId);
+                setSelectedCategories([categoryId]);
+            }
+        } else if (selectedCategories.length > 0 && (!categoryId || categoryId === 'all')) {
+            console.log('Clearing category filter from URL change');
             setSelectedCategories([]);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [categoryId]); // Only depend on categoryId, not categories array
+    }, [categoryId]);
 
     // --- HANDLERS ---
     const toggleCategory = (catId) => {
@@ -198,43 +206,51 @@ const ProductListingPage = () => {
 
                     {/* PRODUCT GRID */}
                     <div className="v3-grid">
-                        <AnimatePresence>
-                            {filteredProducts.map((product, index) => (
-                                <motion.div
-                                    key={product.id}
-                                    className="v3-card"
-                                    layout
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    onClick={() => router.push(`/product/${product.slug}`)}
-                                >
-                                    <div className="v3-image-wrapper">
-                                        <Image
-                                            src={product.images[0] || '/assets/man_editorial.png'}
-                                            alt={product.title}
-                                            fill
-                                            sizes="(max-width: 768px) 50vw, 33vw"
-                                        />
-                                    </div>
-                                    <div className="v3-card-info">
-                                        <h3 className="v3-card-title">{product.title}</h3>
-                                        <span className="v3-card-price">{product.displayPrice}</span>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-
-                        {filteredProducts.length === 0 && (
-                            <div className="v3-no-results">
-                                <p>No products match your filters.</p>
-                                <button onClick={() => {
-                                    setSelectedCategories([]);
-                                    setSelectedSizes([]);
-                                    setSelectedPriceRange(PRICE_RANGES[0]);
-                                }}>Clear All</button>
+                        {loading ? (
+                            <div className="v3-loading-state">
+                                <p>LOADING COLLECTION...</p>
                             </div>
+                        ) : (
+                            <>
+                                <AnimatePresence>
+                                    {filteredProducts.map((product, index) => (
+                                        <motion.div
+                                            key={product.id}
+                                            className="v3-card"
+                                            layout
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                            onClick={() => router.push(`/product/${product.slug}`)}
+                                        >
+                                            <div className="v3-image-wrapper">
+                                                <Image
+                                                    src={product.images[0] || '/assets/man_editorial.png'}
+                                                    alt={product.title}
+                                                    fill
+                                                    sizes="(max-width: 768px) 50vw, 33vw"
+                                                />
+                                            </div>
+                                            <div className="v3-card-info">
+                                                <h3 className="v3-card-title">{product.title}</h3>
+                                                <span className="v3-card-price">{product.displayPrice}</span>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+
+                                {filteredProducts.length === 0 && (
+                                    <div className="v3-no-results">
+                                        <p>No products match your filters.</p>
+                                        <button onClick={() => {
+                                            setSelectedCategories([]);
+                                            setSelectedSizes([]);
+                                            setSelectedPriceRange(PRICE_RANGES[0]);
+                                        }}>Clear All</button>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </main>
@@ -497,6 +513,22 @@ const ProductListingPage = () => {
                 .v3-card-price {
                     font-size: 0.85rem;
                     color: var(--v3-gray);
+                }
+
+                .v3-loading-state {
+                    grid-column: 1 / -1;
+                    text-align: center;
+                    padding: 4rem;
+                    font-family: 'Italiana', serif;
+                    font-size: 1.5rem;
+                    color: var(--v3-gray);
+                    animation: pulse 1.5s infinite ease-in-out;
+                }
+
+                @keyframes pulse {
+                    0% { opacity: 0.5; }
+                    50% { opacity: 1; }
+                    100% { opacity: 0.5; }
                 }
 
                 .v3-no-results {

@@ -2,15 +2,16 @@ import { useState, useEffect } from 'react';
 import { getProductRepository } from '@/lib/providerFactory';
 import { Product, ProductFilters } from '@/repositories/IProductRepository';
 
-export function useProducts(filters?: ProductFilters) {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
+export function useProducts(filters?: ProductFilters, initialData?: Product[]) {
+    const [products, setProducts] = useState<Product[]>(initialData || []);
+    const [loading, setLoading] = useState(!initialData);
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
         const repo = getProductRepository();
 
-        setLoading(true);
+        if (products.length === 0) setLoading(true);
+
         repo.getAll(filters)
             .then(setProducts)
             .catch(setError)
