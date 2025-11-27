@@ -152,8 +152,7 @@ export default function ImagesPage() {
                                 borderRadius: '12px',
                                 overflow: 'hidden',
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                                position: 'relative',
-                                group: 'group' // Pseudo-class for hover effects
+                                position: 'relative'
                             }}>
                                 <div style={{ height: '200px', position: 'relative', background: '#f5f5f5' }}>
                                     <img
