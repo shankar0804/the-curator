@@ -29,7 +29,8 @@ export default function EditProductPage() {
         fit_description: '',
         is_active: true,
         images: [] as string[],
-        sizes: [] as string[]
+        sizes: [] as string[],
+        external_url: ''
     });
 
     useEffect(() => {
@@ -58,7 +59,8 @@ export default function EditProductPage() {
                 fit_description: product.fit_description || '',
                 is_active: product.is_active,
                 images: product.images || [],
-                sizes: product.sizes || []
+                sizes: product.sizes || [],
+                external_url: product.external_url || ''
             });
         } catch (error) {
             console.error('Error loading product:', error);
@@ -255,6 +257,21 @@ export default function EditProductPage() {
                                     style={inputStyle}
                                 />
                             </div>
+                        </div>
+
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <label style={labelStyle}>External Store URL (Optional)</label>
+                            <input
+                                type="url"
+                                name="external_url"
+                                value={formData.external_url}
+                                onChange={handleChange}
+                                placeholder="e.g., https://myntra.com/product/..."
+                                style={inputStyle}
+                            />
+                            <small style={{ color: '#666', fontSize: '0.85rem' }}>
+                                Link to the product on the retailer's website (Myntra, Zara, etc.)
+                            </small>
                         </div>
 
                         <div style={{ marginBottom: '1.5rem' }}>

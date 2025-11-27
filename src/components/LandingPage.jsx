@@ -94,7 +94,7 @@ const LandingPage = () => {
             >
                 <motion.div style={{ textAlign: 'center', opacity: textOpacity }}>
                     <h1 style={{
-                        fontFamily: 'var(--font-syncopate), sans-serif',
+                        fontFamily: 'Syncopate, sans-serif',
                         fontSize: '8vw',
                         lineHeight: 0.85,
                         margin: 0,
@@ -114,7 +114,7 @@ const LandingPage = () => {
 
                     <div style={{ marginTop: '3rem' }}>
                         <p style={{
-                            fontFamily: 'var(--font-syncopate), sans-serif',
+                            fontFamily: 'Syncopate, sans-serif',
                             color: '#fff',
                             fontSize: '0.8rem',
                             letterSpacing: '3px',
@@ -129,7 +129,7 @@ const LandingPage = () => {
                             background: 'transparent',
                             border: '1px solid #fff',
                             color: '#fff',
-                            fontFamily: 'var(--font-syncopate), sans-serif',
+                            fontFamily: 'Syncopate, sans-serif',
                             fontSize: '0.9rem',
                             letterSpacing: '2px',
                             cursor: 'pointer',
@@ -144,7 +144,7 @@ const LandingPage = () => {
                     position: 'absolute',
                     bottom: '3rem',
                     opacity: textOpacity,
-                    fontFamily: 'var(--font-syncopate), sans-serif',
+                    fontFamily: 'Syncopate, sans-serif',
                     fontSize: '0.7rem',
                     color: '#fff',
                     letterSpacing: '3px'

@@ -152,8 +152,16 @@ const MobileView = ({ product, selectedSize, setSelectedSize, SIZES }) => {
 
             {/* Sticky Bottom Bar */}
             <div className="v8-sticky-footer">
-                <button className="v8-add-btn">
-                    {selectedSize ? `ADD TO BAG - ${product.price}` : 'ADD TO BAG'}
+                <button
+                    className="v8-add-btn"
+                    onClick={() => {
+                        if (product.externalUrl) {
+                            window.open(product.externalUrl, '_blank', 'noopener,noreferrer');
+                        }
+                    }}
+                    disabled={!product.externalUrl}
+                >
+                    {product.externalUrl ? 'VISIT STORE' : 'COMING SOON'}
                 </button>
             </div>
         </div>
@@ -209,8 +217,16 @@ const DesktopView = ({ product, selectedSize, setSelectedSize, SIZES, expandedSe
                             </div>
                         </div>
 
-                        <button className="pdp-add-btn">
-                            {selectedSize ? `ADD TO BAG - ${product.price}` : 'SELECT SIZE'}
+                        <button
+                            className="pdp-add-btn"
+                            onClick={() => {
+                                if (product.externalUrl) {
+                                    window.open(product.externalUrl, '_blank', 'noopener,noreferrer');
+                                }
+                            }}
+                            disabled={!product.externalUrl}
+                        >
+                            {product.externalUrl ? 'VISIT STORE' : 'COMING SOON'}
                         </button>
 
                         <div className="pdp-accordions">

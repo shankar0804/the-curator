@@ -91,7 +91,8 @@ export class SupabaseProductAdapter implements IProductRepository {
             composition: row.composition || '',
             fitDescription: row.fit_description || '',
             images,
-            sizes
+            sizes,
+            externalUrl: row.external_url || ''
         };
     }
 }

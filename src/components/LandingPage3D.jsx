@@ -24,13 +24,11 @@ const ThreadHelix = (props) => {
 
         for (let i = 0; i <= count; i++) {
             const t = i / count;
-            const angle = t * Math.PI * 16; // Intermediate turns (was 12 in V47, 20 in V46)
+            const angle = t * Math.PI * 16;
             const radius = 3;
 
             const x = Math.cos(angle) * radius;
             const y = Math.sin(angle) * radius;
-            // INTERMEDIATE LENGTH: 80 units (was 60 in V47, 100 in V46)
-            // Range: -20 to 60 (Camera starts at 40, moves in)
             const z = (t * 80) - 20;
 
             points.push(new THREE.Vector3(x, y, z));
@@ -79,30 +77,21 @@ const SceneController = ({ progress, isScrolling }) => {
     const velocity = useRef(0);
     const hasTriggered = useRef(false);
 
-    // FASTER SETTINGS (Same as V47)
     const acceleration = 2.0;
     const maxSpeed = 0.8;
 
     useFrame((state, delta) => {
-        // 1. Detect Start
         if (isScrolling.current && !hasTriggered.current) {
             hasTriggered.current = true;
         }
 
-        // 2. Determine Target Speed
         const targetSpeed = hasTriggered.current ? maxSpeed : 0;
-
-        // 3. Apply Velocity
         velocity.current = THREE.MathUtils.lerp(velocity.current, targetSpeed, acceleration * delta);
 
         const current = progress.get();
         const next = Math.min(current + velocity.current * delta, 1);
         progress.set(next);
 
-        // 4. Camera Movement
-        // Start at 40 (Entrance)
-        // Move to -20 (Exit)
-        // Total Travel: 60 units
         const targetZ = 40 - next * 60;
         state.camera.position.z = THREE.MathUtils.lerp(state.camera.position.z, targetZ, 0.1);
     });
@@ -111,6 +100,23 @@ const SceneController = ({ progress, isScrolling }) => {
 };
 
 const LandingPage3D = ({ progress, isScrolling }) => {
+    const [hasError, setHasError] = React.useState(false);
+
+    if (hasError) {
+        // Fallback to gradient background if 3D fails
+        return (
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                zIndex: 0,
+                background: 'radial-gradient(ellipse at center, #1a1a2e 0%, #000000 100%)'
+            }} />
+        );
+    }
+
     return (
         <div style={{
             position: 'fixed',
@@ -121,7 +127,23 @@ const LandingPage3D = ({ progress, isScrolling }) => {
             zIndex: 0,
             background: '#000'
         }}>
-            <Canvas camera={{ position: [0, 0, 40], fov: 75, near: 0.01 }}>
+            <Canvas
+                camera={{ position: [0, 0, 40], fov: 75, near: 0.01 }}
+                onCreated={(state) => {
+                    // Handle context loss
+                    const gl = state.gl.domElement;
+                    gl.addEventListener('webglcontextlost', (event) => {
+                        event.preventDefault();
+                        console.warn('WebGL context lost');
+                        setHasError(true);
+                    });
+                }}
+                gl={{
+                    antialias: true,
+                    alpha: false,
+                    powerPreference: 'high-performance'
+                }}
+            >
                 <color attach="background" args={['#000']} />
                 <fog attach="fog" args={['#000', 20, 90]} />
 

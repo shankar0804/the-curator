@@ -11,6 +11,7 @@ export interface ProductFormData {
     is_active: boolean;
     images: string[]; // Array of image URLs
     sizes: string[];  // Array of size strings
+    external_url?: string; // External store URL
 }
 
 export const productService = {
@@ -74,7 +75,8 @@ export const productService = {
                 category_id: productData.category_id,
                 composition: productData.composition,
                 fit_description: productData.fit_description,
-                is_active: productData.is_active
+                is_active: productData.is_active,
+                external_url: productData.external_url || null
             }])
             .select()
             .single();
@@ -126,7 +128,8 @@ export const productService = {
                 category_id: productData.category_id,
                 composition: productData.composition,
                 fit_description: productData.fit_description,
-                is_active: productData.is_active
+                is_active: productData.is_active,
+                external_url: productData.external_url || null
             })
             .eq('id', id);
 

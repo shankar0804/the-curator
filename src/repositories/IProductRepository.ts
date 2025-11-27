@@ -11,6 +11,7 @@ export interface Product {
     fitDescription: string;
     images: string[];
     sizes: string[];
+    externalUrl?: string;
 }
 
 // Filter options
