@@ -1,6 +1,7 @@
 import ProductListingPage from '@/components/ProductListingPage';
 import { SupabaseProductAdapter } from '@/adapters/supabase/SupabaseProductAdapter';
 import { SupabaseCategoryAdapter } from '@/adapters/supabase/SupabaseCategoryAdapter';
+import { Product } from '@/repositories/IProductRepository';
 
 // Force dynamic rendering because we are using params and fetching data that might change
 export const dynamic = 'force-dynamic';
@@ -15,7 +16,7 @@ export default async function Page({ params }: { params: Promise<{ categoryId: s
     const categories = await categoryAdapter.getAll();
 
     // 2. Resolve category ID from slug
-    let initialProducts = [];
+    let initialProducts: Product[] = [];
 
     if (categoryId && categoryId !== 'all') {
         const category = categories.find(c => c.slug === categoryId);
