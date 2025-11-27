@@ -90,7 +90,7 @@ export default function NewProductPage() {
 
         setUploading(true);
         try {
-            const newImageUrls = [];
+            const newImageUrls: string[] = [];
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const fileName = imageService.generateFileName(file.name);
