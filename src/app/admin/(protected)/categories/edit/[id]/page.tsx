@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import ProtectedRoute from '@/components/admin/ProtectedRoute';
 import { categoryService } from '@/services/admin/categoryService';
 import { imageService } from '@/services/admin/imageService';
+import { revalidateCategoryPage } from '@/app/actions/revalidate';
 
 export default function EditCategoryPage() {
     const router = useRouter();
@@ -115,6 +116,7 @@ export default function EditCategoryPage() {
                 display_order: parseInt(formData.display_order as any)
             });
 
+            await revalidateCategoryPage();
             alert('Category updated successfully!');
             router.push('/admin/categories');
         } catch (error) {

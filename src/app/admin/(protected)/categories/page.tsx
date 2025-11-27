@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/admin/ProtectedRoute';
 import { categoryService } from '@/services/admin/categoryService';
+import { revalidateCategoryPage } from '@/app/actions/revalidate';
 
 export default function CategoriesPage() {
     const router = useRouter();
@@ -34,6 +35,7 @@ export default function CategoriesPage() {
         try {
             await categoryService.delete(id);
             setCategories(categories.filter(c => c.id !== id));
+            await revalidateCategoryPage();
             alert('Category deleted successfully!');
         } catch (error) {
             console.error('Error deleting category:', error);
