@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import Image from 'next/image';
 import { useProducts } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
@@ -222,20 +223,23 @@ const ProductListingPage = ({ initialProducts, initialCategories }) => {
                                             animate={{ opacity: 1 }}
                                             exit={{ opacity: 0 }}
                                             transition={{ duration: 0.3 }}
-                                            onClick={() => router.push(`/product/${product.slug}`)}
                                         >
-                                            <div className="v3-image-wrapper">
-                                                <Image
-                                                    src={product.images[0] || '/assets/man_editorial.png'}
-                                                    alt={product.title}
-                                                    fill
-                                                    sizes="(max-width: 768px) 50vw, 33vw"
-                                                />
-                                            </div>
-                                            <div className="v3-card-info">
-                                                <h3 className="v3-card-title">{product.title}</h3>
-                                                <span className="v3-card-price">{product.displayPrice}</span>
-                                            </div>
+                                            <Link href={`/product/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                                                <div className="v3-image-wrapper">
+                                                    <Image
+                                                        src={product.images[0] || '/assets/man_editorial.png'}
+                                                        alt={product.title}
+                                                        fill
+                                                        sizes="(max-width: 768px) 50vw, 33vw"
+                                                        priority={index < 6}
+                                                        quality={80}
+                                                    />
+                                                </div>
+                                                <div className="v3-card-info">
+                                                    <h3 className="v3-card-title">{product.title}</h3>
+                                                    <span className="v3-card-price">{product.displayPrice}</span>
+                                                </div>
+                                            </Link>
                                         </motion.div>
                                     ))}
                                 </AnimatePresence>

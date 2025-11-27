@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import Image from 'next/image';
 import { useProductBySlug } from '@/hooks/useProducts';
 
@@ -175,7 +176,7 @@ const DesktopView = ({ product, selectedSize, setSelectedSize, SIZES, expandedSe
     return (
         <div className="pdp-container">
             <header className="pdp-header">
-                <div className="pdp-logo" onClick={() => router.push('/')}>CURATOR</div>
+                <Link href="/" className="pdp-logo" style={{ textDecoration: 'none', color: 'inherit' }}>CURATOR</Link>
                 <div className="pdp-close" onClick={() => router.back()}>CLOSE</div>
             </header>
 

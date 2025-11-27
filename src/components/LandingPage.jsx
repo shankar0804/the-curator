@@ -52,6 +52,9 @@ const LandingPage = () => {
         window.addEventListener('touchmove', handleInput);
         window.addEventListener('keydown', handleInput);
 
+        // Prefetch the category page for instant transition
+        router.prefetch('/category');
+
         return () => {
             window.removeEventListener('wheel', handleInput);
             window.removeEventListener('touchstart', handleInput);
@@ -59,7 +62,7 @@ const LandingPage = () => {
             window.removeEventListener('keydown', handleInput);
             if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
         };
-    }, []);
+    }, [router]);
 
     // Navigation Trigger
     useEffect(() => {
