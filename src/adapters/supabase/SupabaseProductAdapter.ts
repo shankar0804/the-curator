@@ -38,19 +38,40 @@ export class SupabaseProductAdapter implements IProductRepository {
             .select(`
         *,
         product_images(image_url, display_order),
-        product_sizes(size)
+        product_sizes(size),
+        product_suggestions!source_product_id(
+          suggested_product:products!suggested_product_id(
+            *,
+            product_images(image_url, display_order)
+          )
+        )
       `)
             .eq('slug', slug)
             .eq('is_active', true)
             .single();
 
         if (error) {
-            console.error('Error fetching product by slug:', slug, error);
+            console.error('Error fetching product by slug:', slug, JSON.stringify(error, null, 2));
             return null;
         }
         if (!data) return null;
 
-        return this.mapToProduct(data);
+        const product = this.mapToProduct(data);
+
+        // Debug log
+        console.log('Fetched suggestions raw:', JSON.stringify(data.product_suggestions, null, 2));
+
+        // Map suggestions
+        if (data.product_suggestions && Array.isArray(data.product_suggestions)) {
+            product.suggestedProducts = data.product_suggestions
+                .map((item: any) => item.suggested_product)
+                .filter((p: any) => p && p.is_active !== false) // Ensure product exists and is active
+                .map((p: any) => this.mapToProduct(p));
+        } else {
+            product.suggestedProducts = [];
+        }
+
+        return product;
     }
 
     async getByCategoryId(categoryId: string): Promise<Product[]> {

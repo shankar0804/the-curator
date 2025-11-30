@@ -12,6 +12,7 @@ export interface Product {
     images: string[];
     sizes: string[];
     externalUrl?: string;
+    suggestedProducts?: Product[];
 }
 
 // Filter options
