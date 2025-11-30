@@ -42,7 +42,7 @@
 }
 
 .title {
-    font-family: var(--font-italiana), serif;
+    font-family: var(--font-instrument-serif), serif;
     font-size: 3.5rem;
     font-weight: 400;
     margin: 0 0 4rem 0;
@@ -68,7 +68,7 @@
 }
 
 .stepNum {
-    font-family: var(--font-italiana), serif;
+    font-family: var(--font-instrument-serif), serif;
     font-size: 1.2rem;
     color: #888888;
     margin-bottom: 0.5rem;
@@ -151,7 +151,7 @@
 }
 
 .cardSub {
-    font-family: var(--font-italiana), serif;
+    font-family: var(--font-instrument-serif), serif;
     font-size: 0.9rem;
     color: #888888;
 }
@@ -214,7 +214,7 @@
     }
 
     .stepNumMobile {
-        font-family: var(--font-italiana), serif;
+        font-family: var(--font-instrument-serif), serif;
         font-size: 0.9rem;
         color: #888888;
         margin-bottom: 0.3rem;

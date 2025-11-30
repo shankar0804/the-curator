@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Roboto_Mono, Syncopate, Italiana, Manrope } from "next/font/google";
+import { Syncopate, Manrope, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const robotoMono = Roboto_Mono({ subsets: ["latin"], variable: "--font-roboto-mono" });
 const syncopate = Syncopate({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-syncopate" });
-const italiana = Italiana({ weight: "400", subsets: ["latin"], variable: "--font-italiana" });
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
+const instrumentSerif = Instrument_Serif({ weight: "400", subsets: ["latin"], variable: "--font-instrument-serif", style: "italic" });
 
 export const metadata: Metadata = {
   title: "The Curator",
@@ -20,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${robotoMono.variable} ${syncopate.variable} ${italiana.variable} ${manrope.variable}`}>
+      <body className={`${syncopate.variable} ${manrope.variable} ${instrumentSerif.variable}`}>
         {children}
       </body>
     </html>
